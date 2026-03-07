@@ -12,6 +12,26 @@ class Context;
  * similar to the Spark `files` metadata table.
  */
 
+/** Implements a table engine for Iceberg tables.  Displays data files in Iceberg table snapshots similar to the Spark files metadata table.
+ *
+ * db_name String
+ * table_name String
+ * added_snapshot_id Int64,
+ * content String,
+ * file_path String,
+ * file_format String,
+ * record_count Int64,
+ * file_size_in_bytes Int64,
+ * partition Map(String, String),
+ * schema_id Nullable(Int32),
+ * added_sequence_number Int64,
+ * sort_order_id Nullable(Int32),
+ * equality_ids Array(Int32),
+ * null_value_counts Map(Int32, Int64),
+ * column_sizes Map(Int32, Int64),
+ * value_counts Map(Int32, Int64),
+ */
+
 class StorageSystemIcebergFiles final : public IStorageSystemOneBlock
 {
 public:

@@ -36,6 +36,7 @@ class IcebergMetadata : public IDataLakeMetadata
 {
 public:
     using IcebergHistory = std::vector<Iceberg::IcebergHistoryRecord>;
+    using IcebergFiles = std::vector<Iceberg::IcebergFileRecord>;
 
     static constexpr auto name = "Iceberg";
 
@@ -84,7 +85,6 @@ public:
 
     IcebergHistory getHistory(ContextPtr local_context) const;
 
-    using IcebergFiles = std::vector<Iceberg::IcebergFileRecord>;
     IcebergFiles getFiles(ContextPtr local_context) const;
 
     static bool supportsTotalRows(ContextPtr, ObjectStorageType) { return true; }
