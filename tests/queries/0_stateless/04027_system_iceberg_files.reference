@@ -1,0 +1,14 @@
+--- has files ---
+1
+--- file metadata ---
+data	1	1	Parquet	1
+data	1	1	Parquet	1
+--- partition populated ---
+1
+1
+--- column stats populated ---
+1
+--- record count matches ---
+1
+--- content type ---
+data

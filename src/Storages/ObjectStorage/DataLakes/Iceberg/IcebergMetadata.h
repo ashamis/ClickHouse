@@ -84,6 +84,9 @@ public:
 
     IcebergHistory getHistory(ContextPtr local_context) const;
 
+    using IcebergFiles = std::vector<Iceberg::IcebergFileRecord>;
+    IcebergFiles getFiles(ContextPtr local_context) const;
+
     static bool supportsTotalRows(ContextPtr, ObjectStorageType) { return true; }
     std::optional<size_t> totalRows(ContextPtr Local_context) const override;
     static bool supportsTotalBytes(ContextPtr, ObjectStorageType) { return true; }

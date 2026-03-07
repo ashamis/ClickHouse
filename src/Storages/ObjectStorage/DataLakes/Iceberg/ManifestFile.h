@@ -81,6 +81,14 @@ struct ManifestFileEntry : public boost::noncopyable
     /// Data file is sorted with this sort_order_id (can be read from metadata.json)
     std::optional<Int32> sort_order_id;
 
+    /// Record count and file size from Iceberg manifest (field-ids 103 and 104)
+    Int64 record_count;
+    Int64 file_size_in_bytes;
+
+    /// Whether schema_id was explicitly resolved from snapshot metadata (true)
+    /// or fell back to the manifest-level schema (false)
+    bool has_explicit_schema_id;
+
     String dumpDeletesMatchingInfo() const;
 
     ManifestFileEntry(
@@ -91,6 +99,7 @@ struct ManifestFileEntry : public boost::noncopyable
         Int64 added_sequence_number_,
         Int64 snapshot_id_,
         Int32 schema_id_,
+        bool has_explicit_schema_id_,
         DB::Row& partition_key_value_,
         PartitionSpecification& common_partition_specification_,
         std::unordered_map<Int32, ColumnInfo>& columns_infos_,
@@ -98,7 +107,9 @@ struct ManifestFileEntry : public boost::noncopyable
         std::optional<String> lower_reference_data_file_path_,
         std::optional<String> upper_reference_data_file_path_,
         std::optional<std::vector<Int32>> equality_ids_,
-        std::optional<Int32> sort_order_id_)
+        std::optional<Int32> sort_order_id_,
+        Int64 record_count_,
+        Int64 file_size_in_bytes_)
         : file_path_key(file_path_key_)
         , file_path(file_path_)
         , row_number(row_number_)
@@ -114,6 +125,9 @@ struct ManifestFileEntry : public boost::noncopyable
         , upper_reference_data_file_path(upper_reference_data_file_path_)
         , equality_ids(std::move(equality_ids_))
         , sort_order_id(sort_order_id_)
+        , record_count(record_count_)
+        , file_size_in_bytes(file_size_in_bytes_)
+        , has_explicit_schema_id(has_explicit_schema_id_)
     {
     }
 };

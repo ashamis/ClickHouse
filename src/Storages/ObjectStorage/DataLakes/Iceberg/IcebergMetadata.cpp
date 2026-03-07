@@ -758,6 +758,75 @@ IcebergMetadata::IcebergHistory IcebergMetadata::getHistory(ContextPtr local_con
     return iceberg_history;
 }
 
+IcebergMetadata::IcebergFiles IcebergMetadata::getFiles(ContextPtr local_context) const
+{
+    auto [actual_data_snapshot, actual_table_state_snapshot] = getRelevantState(local_context);
+
+    IcebergFiles result;
+    if (!actual_data_snapshot)
+        return result;
+
+    auto add_files_from_manifest = [&](const ManifestFilePtr & manifest_file, FileContentType content_type)
+    {
+        const auto & files = manifest_file->getFilesWithoutDeleted(content_type);
+        for (const auto & file : files)
+        {
+            IcebergFileRecord record;
+            record.added_snapshot_id = file->snapshot_id;
+            record.content = FileContentTypeToString(content_type);
+            record.file_path = file->file_path_key;
+            record.file_format = file->file_format;
+            record.record_count = file->record_count;
+            record.file_size_in_bytes = file->file_size_in_bytes;
+            record.added_sequence_number = file->added_sequence_number;
+            record.sort_order_id = file->sort_order_id;
+
+            if (file->has_explicit_schema_id)
+                record.schema_id = file->schema_id;
+
+            if (file->equality_ids.has_value())
+                record.equality_ids = *file->equality_ids;
+
+            for (size_t j = 0; j < file->common_partition_specification.size() && j < file->partition_key_value.size(); ++j)
+            {
+                record.partition.emplace_back(
+                    file->common_partition_specification[j].partition_name,
+                    file->partition_key_value[j].dump());
+            }
+
+            for (const auto & [col_id, col_info] : file->columns_infos)
+            {
+                if (col_info.nulls_count.has_value())
+                    record.null_value_counts[col_id] = col_info.nulls_count;
+                if (col_info.bytes_size.has_value())
+                    record.column_sizes[col_id] = col_info.bytes_size;
+                if (col_info.rows_count.has_value())
+                    record.value_counts[col_id] = col_info.rows_count;
+            }
+
+            result.push_back(std::move(record));
+        }
+    };
+
+    for (const auto & manifest_list_entry : actual_data_snapshot->manifest_list_entries)
+    {
+        auto manifest_file_ptr = getManifestFile(
+            object_storage,
+            persistent_components,
+            local_context,
+            log,
+            manifest_list_entry.manifest_file_path,
+            manifest_list_entry.added_sequence_number,
+            manifest_list_entry.added_snapshot_id);
+
+        add_files_from_manifest(manifest_file_ptr, FileContentType::DATA);
+        add_files_from_manifest(manifest_file_ptr, FileContentType::POSITION_DELETE);
+        add_files_from_manifest(manifest_file_ptr, FileContentType::EQUALITY_DELETE);
+    }
+
+    return result;
+}
+
 bool IcebergMetadata::isDataSortedBySortingKey(StorageMetadataPtr storage_metadata_snapshot, ContextPtr context) const
 {
     if (!storage_metadata_snapshot->hasSortingKey())
