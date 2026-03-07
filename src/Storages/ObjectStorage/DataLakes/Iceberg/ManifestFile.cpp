@@ -287,7 +287,8 @@ ManifestFileContent::ManifestFileContent(
                 tryLogCurrentException("ICEBERG_SPECIFICATION_VIOLATION", "", LogsLevel::error);
             }
         }
-        const auto schema_id = schema_id_opt.has_value() ? schema_id_opt.value() : manifest_schema_id;
+        const bool has_explicit_schema_id = schema_id_opt.has_value();
+        const auto schema_id = has_explicit_schema_id ? schema_id_opt.value() : manifest_schema_id;
 
         const auto file_path_key
             = manifest_file_deserializer.getValueFromRowByName(i, c_data_file_file_path, TypeIndex::String).safeGet<String>();
@@ -430,6 +431,9 @@ ManifestFileContent::ManifestFileContent(
                 sort_order_id = sort_order_id_value.safeGet<Int32>();
         }
 
+        Int64 record_count = manifest_file_deserializer.getValueFromRowByName(i, c_data_file_record_count, TypeIndex::Int64).safeGet<Int64>();
+        Int64 file_size_in_bytes = manifest_file_deserializer.getValueFromRowByName(i, c_data_file_file_size_in_bytes, TypeIndex::Int64).safeGet<Int64>();
+
         switch (content_type)
         {
             case FileContentType::DATA:
@@ -449,7 +453,10 @@ ManifestFileContent::ManifestFileContent(
                         /*lower_reference_data_file_path_ = */ std::nullopt,
                         /*upper_reference_data_file_path_ = */ std::nullopt,
                         /*equality_ids*/ std::nullopt,
-                        sort_order_id));
+                        sort_order_id,
+                        record_count,
+                        file_size_in_bytes,
+                        has_explicit_schema_id));
                 break;
             case FileContentType::POSITION_DELETE:
             {
@@ -495,7 +502,10 @@ ManifestFileContent::ManifestFileContent(
                         lower_reference_data_file_path,
                         upper_reference_data_file_path,
                         /*equality_ids*/ std::nullopt,
-                        /*sort_order_id = */ std::nullopt));
+                        /*sort_order_id = */ std::nullopt,
+                        record_count,
+                        file_size_in_bytes,
+                        has_explicit_schema_id));
                 break;
             }
             case FileContentType::EQUALITY_DELETE:
@@ -527,7 +537,10 @@ ManifestFileContent::ManifestFileContent(
                         /*lower_reference_data_file_path_ = */ std::nullopt,
                         /*upper_reference_data_file_path_ = */ std::nullopt,
                         equality_ids,
-                        /*sort_order_id = */ std::nullopt));
+                        /*sort_order_id = */ std::nullopt,
+                        record_count,
+                        file_size_in_bytes,
+                        has_explicit_schema_id));
                 break;
             }
         }
