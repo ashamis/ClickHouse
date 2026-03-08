@@ -773,7 +773,7 @@ IcebergMetadata::IcebergFiles IcebergMetadata::getFiles(ContextPtr local_context
         {
             IcebergFileRecord record;
             record.added_snapshot_id = file->snapshot_id;
-            record.content = FileContentTypeToString(content_type);
+            record.content = static_cast<Int8>(content_type);
             record.file_path = file->file_path_key;
             record.file_format = file->file_format;
             record.record_count = file->record_count;
@@ -796,11 +796,8 @@ IcebergMetadata::IcebergFiles IcebergMetadata::getFiles(ContextPtr local_context
 
             for (const auto & [col_id, col_info] : file->columns_infos)
             {
-                if (col_info.nulls_count.has_value())
                     record.null_value_counts[col_id] = col_info.nulls_count;
-                if (col_info.bytes_size.has_value())
                     record.column_sizes[col_id] = col_info.bytes_size;
-                if (col_info.rows_count.has_value())
                     record.value_counts[col_id] = col_info.rows_count;
             }
 

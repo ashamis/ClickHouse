@@ -47,7 +47,7 @@ using IcebergHistory = std::vector<Iceberg::IcebergHistoryRecord>;
 struct IcebergFileRecord
 {
     Int64 added_snapshot_id;
-    String content;
+    Int8 content;
     String file_path;
     String file_format;
     Int64 record_count;

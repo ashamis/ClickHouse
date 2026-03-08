@@ -17,7 +17,7 @@ class Context;
  * db_name String
  * table_name String
  * added_snapshot_id Int64,
- * content String,
+ * content Enum8('DATA' = 0, 'POSITION_DELETE' = 1, 'EQUALITY_DELETE' = 2),
  * file_path String,
  * file_format String,
  * record_count Int64,

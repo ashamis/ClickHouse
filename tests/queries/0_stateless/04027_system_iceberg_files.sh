@@ -65,7 +65,7 @@ echo "--- record count matches ---"
 ${CLICKHOUSE_CLIENT} ${SETTINGS} --query "
     SELECT sum(record_count) = (SELECT count() FROM test_iceberg_files)
     FROM system.iceberg_files
-    WHERE database = currentDatabase() AND table = 'test_iceberg_files' AND content = 'data';
+    WHERE database = currentDatabase() AND table = 'test_iceberg_files' AND content = 'DATA';
 "
 
 echo "--- content type ---"
