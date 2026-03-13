@@ -3,6 +3,7 @@
 
 #if USE_AVRO
 
+#include <map>
 #include <DataTypes/DataTypeDateTime64.h>
 #include <Storages/ObjectStorage/DataLakes/Iceberg/IcebergMetadataFilesCache.h>
 #include <Storages/ObjectStorage/DataLakes/Iceberg/ManifestFile.h>
@@ -57,9 +58,9 @@ struct IcebergFileRecord
     Int64 sequence_number;
     std::optional<Int32> sort_order_id;
     std::optional<std::vector<Int32>> equality_ids;
-    std::unordered_map<Int32, std::optional<Int64>> null_value_counts;
-    std::unordered_map<Int32, std::optional<Int64>> column_sizes;
-    std::unordered_map<Int32, std::optional<Int64>> value_counts;
+    std::map<Int32, std::optional<Int64>> null_value_counts;
+    std::map<Int32, std::optional<Int64>> column_sizes;
+    std::map<Int32, std::optional<Int64>> value_counts;
 };
 
 using IcebergFiles = std::vector<IcebergFileRecord>;

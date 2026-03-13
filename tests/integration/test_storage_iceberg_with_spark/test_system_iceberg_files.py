@@ -129,3 +129,38 @@ def test_system_iceberg_files(
         )
     )
     assert has_column_sizes > 0, "Expected at least one file with column_sizes populated"
+
+    # Verify streaming: small max_block_size forces multiple blocks
+    num_blocks = int(
+        instance.query(
+            f"SELECT count(DISTINCT blockNumber()) FROM system.iceberg_files WHERE database = 'default' AND table = '{TABLE_NAME}'",
+            settings={"max_block_size": 1},
+        )
+    )
+    assert num_blocks == 3, f"Streaming: expected 3 blocks, got {num_blocks}"
+
+    max_bs = int(
+        instance.query(
+            f"SELECT max(blockSize()) FROM system.iceberg_files WHERE database = 'default' AND table = '{TABLE_NAME}'",
+            settings={"max_block_size": 1},
+        )
+    )
+    assert max_bs <= 1, f"Streaming: expected block size <= 1, got {max_bs}"
+
+    streaming_count = int(
+        instance.query(
+            f"SELECT count() FROM system.iceberg_files WHERE database = 'default' AND table = '{TABLE_NAME}'",
+            settings={"max_block_size": 1},
+        )
+    )
+    assert streaming_count == 3, f"Streaming: expected 3 files, got {streaming_count}"
+
+    streaming_records = int(
+        instance.query(
+            f"SELECT sum(record_count) FROM system.iceberg_files WHERE database = 'default' AND table = '{TABLE_NAME}'",
+            settings={"max_block_size": 1},
+        )
+    )
+    assert (
+        streaming_records == actual_count
+    ), f"Streaming: record count mismatch: got {streaming_records}, expected {actual_count}"

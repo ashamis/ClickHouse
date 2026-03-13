@@ -12,3 +12,11 @@ DATA	1	1	Parquet	1
 1
 --- content type ---
 DATA
+--- streaming produces multiple blocks ---
+1
+--- streaming block size at most 1 ---
+1
+--- streaming count still correct ---
+2
+--- streaming record count still matches ---
+1
