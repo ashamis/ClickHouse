@@ -84,4 +84,32 @@ ${CLICKHOUSE_CLIENT} ${SETTINGS} --query "
     WHERE database = currentDatabase() AND table = 'test_iceberg_files';
 "
 
+echo "--- streaming produces multiple blocks ---"
+${CLICKHOUSE_CLIENT} ${SETTINGS} --max_block_size=1 --query "
+    SELECT count(DISTINCT blockNumber()) > 1
+    FROM system.iceberg_files
+    WHERE database = currentDatabase() AND table = 'test_iceberg_files';
+"
+
+echo "--- streaming block size at most 1 ---"
+${CLICKHOUSE_CLIENT} ${SETTINGS} --max_block_size=1 --query "
+    SELECT max(blockSize()) <= 1
+    FROM system.iceberg_files
+    WHERE database = currentDatabase() AND table = 'test_iceberg_files';
+"
+
+echo "--- streaming count still correct ---"
+${CLICKHOUSE_CLIENT} ${SETTINGS} --max_block_size=1 --query "
+    SELECT count()
+    FROM system.iceberg_files
+    WHERE database = currentDatabase() AND table = 'test_iceberg_files';
+"
+
+echo "--- streaming record count still matches ---"
+${CLICKHOUSE_CLIENT} ${SETTINGS} --max_block_size=1 --query "
+    SELECT sum(record_count) = (SELECT count() FROM test_iceberg_files)
+    FROM system.iceberg_files
+    WHERE database = currentDatabase() AND table = 'test_iceberg_files' AND content_type = 'DATA';
+"
+
 # cleanup is handled by the EXIT trap

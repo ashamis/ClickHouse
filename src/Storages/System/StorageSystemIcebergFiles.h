@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Storages/System/IStorageSystemOneBlock.h>
+#include <Storages/IStorage.h>
 
 
 namespace DB
@@ -28,21 +28,24 @@ class Context;
  * equality_ids Array(Int32),
  */
 
-class StorageSystemIcebergFiles final : public IStorageSystemOneBlock
+class StorageSystemIcebergFiles final : public IStorage
 {
 public:
+    explicit StorageSystemIcebergFiles(const StorageID & table_id_);
+
     std::string getName() const override { return "SystemIcebergFiles"; }
 
-    static ColumnsDescription getColumnsDescription();
+    bool isSystemStorage() const override { return true; }
 
-protected:
-    using IStorageSystemOneBlock::IStorageSystemOneBlock;
-
-    void fillData(
-        [[maybe_unused]] MutableColumns & res_columns,
-        [[maybe_unused]] ContextPtr context,
-        const ActionsDAG::Node *,
-        std::vector<UInt8>) const override;
+    void read(
+        QueryPlan & query_plan,
+        const Names & column_names,
+        const StorageSnapshotPtr & storage_snapshot,
+        SelectQueryInfo & query_info,
+        ContextPtr context,
+        QueryProcessingStage::Enum processed_stage,
+        size_t max_block_size,
+        size_t num_streams) override;
 };
 
 }
